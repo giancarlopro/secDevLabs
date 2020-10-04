@@ -102,7 +102,38 @@ Request:
 
 #### 🔥
 
-An attacker could now create any malicious SQL queries and send them to the API that, in theory, would be executed. For this attack narrative, [sqlmap](https://github.com/sqlmapproject/sqlmap) will be used to exemplify how an automated SQL Injection attack may be performed.
+An attacker could now create any malicious SQL queries and send them to the API that, in theory, would be executed. For this attack narrative, we will cover how to use blind sql injection attack to extract data from the API.
+
+### Understanding how blind sql injection works
+
+The API don't return any information about the query executed, so we're not able to get the data directly from the response. But we can use the response to give us information about the data stored in the database, and that's how blind sql injection attacks works.
+
+It consists on asking true or false questions to the API, and use the response to determine the answer. Our API, on `/login` endpoint, responds with two different responses, those are:
+
+| On success     | On error                        |
+|----------------|---------------------------------|
+|Welcome, {user}!|User not found or wrong password!|
+
+To extract data from the database, we need to know it's structure, which tables and columns to look up for data, and to find that out we can ask questions like:
+
+> There is a table where it's name starts with `a`?
+
+> There is a table named `Users`?
+
+But we need to ask those questions using SQL. They would look something like this:
+
+> `SELECT table_name FROM information_schema.tables WHERE SUBSTRING(table_name, 1, 1) = 'a'`
+
+> `SELECT table_name FROM information_schema.tables WHERE table_name = 'Users'`
+
+---
+**Note:** `information_schema` database contains the tables `tables` and `columns` that stores all tables and columns existent in the mysql server. We will use those to extract tables and columns names.
+
+---
+
+ In latest versions of mysql, we can extract that information from a database named `information_schema`, it stores a lot of metainformation about the database server in it's tables, the ones useful for us will be `information_schema.tables` and `information_schema.columns`.
+
+[sqlmap](https://github.com/sqlmapproject/sqlmap) will be used to exemplify how an automated SQL Injection attack may be performed.
 
 To install sqlmap on a Mac you can simply type:
 
